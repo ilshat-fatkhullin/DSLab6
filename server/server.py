@@ -28,37 +28,38 @@ class ClientListener(Thread):
         return name
 
     def run(self):
-        while True:
-            file_name_size = int.from_bytes(bytes=self.sock.recv(32), byteorder='big', signed=False)
+        file_name_size = int.from_bytes(bytes=self.sock.recv(32), byteorder='big', signed=False)
 
-            if file_name_size is None:
-                self._close()
-                print('Error during file name size reading.')
-                return
+        if file_name_size is None:
+            self._close()
+            print('Error during file name size reading.')
+            return
 
-            file_size = int.from_bytes(bytes=self.sock.recv(64), byteorder='big', signed=False)
+        file_size = int.from_bytes(bytes=self.sock.recv(64), byteorder='big', signed=False)
 
-            if file_size is None:
-                self._close()
-                print('Error during file size reading.')
-                return
+        if file_size is None:
+            self._close()
+            print('Error during file size reading.')
+            return
 
-            file_name = self.sock.recv(file_name_size).decode('UTF-8')
-            file_name = ClientListener._get_file_name(file_name)
+        file_name = self.sock.recv(file_name_size).decode('UTF-8')
+        file_name = ClientListener._get_file_name(file_name)
 
-            with open(file_name, 'wb') as sw:
+        with open(file_name, 'wb') as sw:
 
-                received_size = 0
+            received_size = 0
 
-                while received_size < file_size:
-                    buffer = min(file_size - received_size, 1024)
-                    file = self.sock.recv(buffer)
-                    received_size += buffer
-                    if file is None:
-                        self._close()
-                        print('Error during file transfer.')
-                        return
-                    sw.write(file)
+            while received_size < file_size:
+                buffer = min(file_size - received_size, 1024)
+                file = self.sock.recv(buffer)
+                received_size += buffer
+                if file is None:
+                    self._close()
+                    print('Error during file transfer.')
+                    return
+                sw.write(file)
+
+            print(file_name + ' received.')
 
 
 def main():
