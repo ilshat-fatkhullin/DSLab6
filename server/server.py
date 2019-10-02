@@ -47,14 +47,18 @@ class ClientListener(Thread):
             file_name = ClientListener._get_file_name(file_name)
 
             with open(file_name, 'wb') as sw:
-                file = self.sock.recv(file_size)
 
-                if file is None:
-                    self._close()
-                    print('Error during file transfer.')
-                    return
+                received_size = 0
 
-                sw.write(file)
+                while received_size < file_size:
+                    buffer = min(file_size - received_size, 1024)
+                    file = self.sock.recv(buffer)
+                    received_size += buffer
+                    if file is None:
+                        self._close()
+                        print('Error during file transfer.')
+                        return
+                    sw.write(file)
 
 
 def main():
